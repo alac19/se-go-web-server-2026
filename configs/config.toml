@@ -1,0 +1,21 @@
+# 监听端口列表
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080   # HTTP 端口
+
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8443   # HTTPS 端口
+
+# 后端服务器列表
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9092
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9093
