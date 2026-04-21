@@ -107,3 +107,44 @@ listen_port = 8080
 		t.Errorf("期望 '配置中没有 forward 项' 错误，得到 %v", err)
 	}
 }
+
+// 测试包含心跳配置的完整配置
+func TestLoadConfigWithHeartbeat(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[heartbeat]
+enabled = true
+path = "/ping"
+interval_seconds = 10
+timeout_seconds = 2
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig 返回错误: %v", err)
+	}
+	if !cfg.Heartbeat.Enabled {
+		t.Error("Heartbeat.Enabled 应为 true")
+	}
+	if cfg.Heartbeat.Path != "/ping" {
+		t.Errorf("Heartbeat.Path 期望 /ping，得到 %s", cfg.Heartbeat.Path)
+	}
+	if cfg.Heartbeat.IntervalSeconds != 10 {
+		t.Errorf("IntervalSeconds 期望 10，得到 %d", cfg.Heartbeat.IntervalSeconds)
+	}
+	if cfg.Heartbeat.TimeoutSeconds != 2 {
+		t.Errorf("TimeoutSeconds 期望 2，得到 %d", cfg.Heartbeat.TimeoutSeconds)
+	}
+}

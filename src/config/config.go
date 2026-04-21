@@ -9,8 +9,9 @@ import (
 
 // Config 总配置
 type Config struct {
-	Listen  []Listen  `toml:"listen"`
-	Forward []Forward `toml:"forward"`
+	Listen    []Listen  `toml:"listen"`
+	Forward   []Forward `toml:"forward"`
+	Heartbeat Heartbeat `toml:"heartbeat"`
 }
 
 // Listen 监听配置
@@ -23,6 +24,14 @@ type Listen struct {
 type Forward struct {
 	ForwardAddr string `toml:"forward_addr"`
 	ForwardPort uint16 `toml:"forward_port"`
+}
+
+// Heartbeat 心跳检测配置
+type Heartbeat struct {
+	Enabled         bool   `toml:"enabled"`          // 是否启用
+	Path            string `toml:"path"`             // 健康检查路径
+	IntervalSeconds int    `toml:"interval_seconds"` // 检查间隔（秒）
+	TimeoutSeconds  int    `toml:"timeout_seconds"`  // 单次请求超时（秒）
 }
 
 // / 从指定路径加载 TOML 配置文件
