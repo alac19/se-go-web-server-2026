@@ -19,3 +19,10 @@ forward_port = 9092
 [[forward]]
 forward_addr = "127.0.0.1"
 forward_port = 9093
+
+# 心跳检测配置
+[heartbeat]
+enabled = true
+path = "/heartbeat"
+interval_seconds = 30
+timeout_seconds = 2
