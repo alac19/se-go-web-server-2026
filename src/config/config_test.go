@@ -148,3 +148,64 @@ timeout_seconds = 2
 		t.Errorf("TimeoutSeconds 期望 2，得到 %d", cfg.Heartbeat.TimeoutSeconds)
 	}
 }
+
+// 测试包含 proxy 超时配置的完整配置
+func TestLoadConfigWithProxy(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[heartbeat]
+enabled = true
+path = "/heartbeat"
+interval_seconds = 30
+timeout_seconds = 2
+
+[proxy]
+timeout_seconds = 45
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig 返回错误: %v", err)
+	}
+	if cfg.Proxy.TimeoutSeconds != 45 {
+		t.Errorf("Proxy.TimeoutSeconds 期望 45，得到 %d", cfg.Proxy.TimeoutSeconds)
+	}
+}
+
+// 测试缺少 proxy 配置时，TimeoutSeconds 应为零值（0）
+func TestLoadConfigMissingProxy(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig 返回错误: %v", err)
+	}
+	if cfg.Proxy.TimeoutSeconds != 0 {
+		t.Errorf("缺少 proxy 段时 TimeoutSeconds 应为 0，得到 %d", cfg.Proxy.TimeoutSeconds)
+	}
+}

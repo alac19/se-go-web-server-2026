@@ -12,6 +12,7 @@ type Config struct {
 	Listen    []Listen  `toml:"listen"`
 	Forward   []Forward `toml:"forward"`
 	Heartbeat Heartbeat `toml:"heartbeat"`
+	Proxy     Proxy     `toml:"proxy"`
 }
 
 // Listen 监听配置
@@ -32,6 +33,11 @@ type Heartbeat struct {
 	Path            string `toml:"path"`             // 健康检查路径
 	IntervalSeconds int    `toml:"interval_seconds"` // 检查间隔（秒）
 	TimeoutSeconds  int    `toml:"timeout_seconds"`  // 单次请求超时（秒）
+}
+
+// Proxy 代理转发配置
+type Proxy struct {
+	TimeoutSeconds int `toml:"timeout_seconds"` // 转发请求超时（秒）
 }
 
 // / 从指定路径加载 TOML 配置文件
