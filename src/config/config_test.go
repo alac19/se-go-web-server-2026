@@ -280,3 +280,78 @@ forward_port = 9091
 		t.Errorf("缺少 TLS 段时 KeyFile 应为空，得到 %s", cfg.TLS.KeyFile)
 	}
 }
+
+// 测试包含日志配置的完整配置
+func TestLoadConfigWithLog(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[heartbeat]
+enabled = true
+path = "/heartbeat"
+interval_seconds = 30
+timeout_seconds = 2
+
+[proxy]
+timeout_seconds = 45
+
+[tls]
+cert_file = "mycert.pem"
+key_file = "mykey.pem"
+
+[log]
+level = "debug"
+file_path = "myapp.log"
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig 返回错误: %v", err)
+	}
+	if cfg.Log.Level != "debug" {
+		t.Errorf("Log.Level 期望 debug，得到 %s", cfg.Log.Level)
+	}
+	if cfg.Log.FilePath != "myapp.log" {
+		t.Errorf("Log.FilePath 期望 myapp.log，得到 %s", cfg.Log.FilePath)
+	}
+}
+
+// 测试缺少日志配置时，Level 和 FilePath 应为空字符串
+func TestLoadConfigMissingLog(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig 返回错误: %v", err)
+	}
+	if cfg.Log.Level != "" {
+		t.Errorf("缺少 log 段时 Level 应为空，得到 %s", cfg.Log.Level)
+	}
+	if cfg.Log.FilePath != "" {
+		t.Errorf("缺少 log 段时 FilePath 应为空，得到 %s", cfg.Log.FilePath)
+	}
+}

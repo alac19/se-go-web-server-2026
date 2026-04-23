@@ -14,6 +14,7 @@ import (
 	"se-go-web-server-2026/src/config"
 	"se-go-web-server-2026/src/health"
 	"se-go-web-server-2026/src/lb"
+	"se-go-web-server-2026/src/log"
 	"se-go-web-server-2026/src/proxy"
 )
 
@@ -33,6 +34,14 @@ func main() {
 		slog.Error("配置文件中至少需要两个监听地址（HTTP + HTTPS）")
 		os.Exit(1)
 	}
+
+	// 初始化日志（必须在加载配置后）
+	if err := log.Init(cfg.Log.Level, cfg.Log.FilePath); err != nil {
+		fmt.Fprintf(os.Stderr, "初始化日志失败: %v\n", err)
+		os.Exit(1)
+	}
+
+	slog.Info("日志系统已初始化", "level", cfg.Log.Level, "file", cfg.Log.FilePath)
 
 	// 创建负载均衡器（初始为空）
 	lbInstance := lb.New([]*url.URL{})

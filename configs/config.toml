@@ -35,3 +35,8 @@ timeout_seconds = 30   # 转发后端请求的超时时间
 [tls]
 cert_file = "cert.pem"
 key_file = "key.pem"
+
+# 日志配置 
+[log]
+level = "info"
+file_path = "log.txt"
