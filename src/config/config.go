@@ -14,6 +14,7 @@ type Config struct {
 	Heartbeat Heartbeat `toml:"heartbeat"`
 	Proxy     Proxy     `toml:"proxy"`
 	TLS       TLSConfig `toml:"tls"`
+	Log       Log       `toml:"log"`
 }
 
 // Listen 监听配置
@@ -41,9 +42,16 @@ type Proxy struct {
 	TimeoutSeconds int `toml:"timeout_seconds"` // 转发请求超时（秒）
 }
 
+// TLS 配置
 type TLSConfig struct {
 	CertFile string `toml:"cert_file"`
 	KeyFile  string `toml:"key_file"`
+}
+
+// Log 日志配置
+type Log struct {
+	Level    string `toml:"level"`     // 日志级别，debug, info, warn, error
+	FilePath string `toml:"file_path"` // 日志文件路径，空值表示输出到控制台
 }
 
 // / 从指定路径加载 TOML 配置文件
@@ -66,6 +74,16 @@ func LoadConfig(path string) (*Config, error) {
 	}
 	if len(config.Forward) == 0 {
 		return nil, fmt.Errorf("配置中没有 forward 项")
+	}
+	for _, l := range config.Listen {
+		if l.ListenPort == 0 {
+			return nil, fmt.Errorf("监听端口不能为 0")
+		}
+	}
+	for _, f := range config.Forward {
+		if f.ForwardPort == 0 {
+			return nil, fmt.Errorf("转发端口不能为 0")
+		}
 	}
 
 	return &config, nil

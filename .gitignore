@@ -31,6 +31,9 @@ go.work.sum
 key.pem
 *.key
 
+# Log files
+log.txt
+
 # Editor/IDE
 # .idea/
 # .vscode/

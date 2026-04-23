@@ -63,7 +63,7 @@ func TestLoadBalancerRoundRobin(t *testing.T) {
 	}
 }
 
-// 测试 UpdateBackends：动态替换后端列表后，轮询基于新列表
+// 测试 UpdateBackends：动态替换后端列表后，轮询基于新列表（不依赖起始顺序）
 func TestLoadBalancerUpdateBackends(t *testing.T) {
 	initial := []*url.URL{{Scheme: "http", Host: "old1:8080"}, {Scheme: "http", Host: "old2:8080"}}
 	lb := New(initial)
@@ -77,14 +77,13 @@ func TestLoadBalancerUpdateBackends(t *testing.T) {
 	newBackends := []*url.URL{{Scheme: "http", Host: "new1:9090"}, {Scheme: "http", Host: "new2:9090"}}
 	lb.UpdateBackends(newBackends)
 
-	// 更新后，Next 应该从新列表的第一个开始（注意：counter 没有重置，但取模后依然正确）
-	got1 := lb.Next()
-	got2 := lb.Next()
-	if got1.Host != "new1:9090" {
-		t.Errorf("更新后第一次应为 new1:9090，得到 %s", got1.Host)
-	}
-	if got2.Host != "new2:9090" {
-		t.Errorf("更新后第二次应为 new2:9090，得到 %s", got2.Host)
+	// 更新后，连续取两次，确保两个新后端都被返回（顺序可能因为计数器未重置而变化）
+	got1 := lb.Next().Host
+	got2 := lb.Next().Host
+	if (got1 == "new1:9090" && got2 == "new2:9090") || (got1 == "new2:9090" && got2 == "new1:9090") {
+		// 两种顺序都接受
+	} else {
+		t.Errorf("更新后两次返回的后端应为 new1:9090 和 new2:9090 (任意顺序)，实际得到 %s, %s", got1, got2)
 	}
 }
 
@@ -118,5 +117,19 @@ func BenchmarkLoadBalancerNext(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = lb.Next()
+	}
+}
+
+// 测试 HealthyCount 方法
+func TestHealthyCount(t *testing.T) {
+	backends := testBackends()
+	lb := New(backends)
+	if got := lb.HealthyCount(); got != 3 {
+		t.Errorf("HealthyCount 期望 3，得到 %d", got)
+	}
+
+	lb.UpdateBackends([]*url.URL{}) // 清空后端
+	if got := lb.HealthyCount(); got != 0 {
+		t.Errorf("清空后 HealthyCount 期望 0，得到 %d", got)
 	}
 }

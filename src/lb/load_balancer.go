@@ -32,10 +32,13 @@ func New(urls []*url.URL) *LoadBalancer {
 // / - *url.URL: 下一个可用的后端 URL，如果没有后端，返回 nil
 func (lb *LoadBalancer) Next() *url.URL {
 	n := len(lb.urls)
+
 	if n == 0 {
 		return nil
 	}
+
 	idx := lb.counter.Add(1) - 1
+
 	return lb.urls[idx%uint64(n)]
 }
 
@@ -46,4 +49,14 @@ func (lb *LoadBalancer) Next() *url.URL {
 func (lb *LoadBalancer) UpdateBackends(urls []*url.URL) {
 	lb.urls = urls
 	// 不重置 counter，允许继续轮询（不会出错，只是可能跳过一些，但能避免更新后端后所有请求瞬间涌向第一个后端（惊群效应））
+}
+
+// / 返回当前健康后端数量（仅读，不改变轮询状态）
+// / # 参数
+// / - lb: 创建的 LoadBalancer 实例
+// /
+// / # 返回
+// / - int: 当前健康后端数量
+func (lb *LoadBalancer) HealthyCount() int {
+	return len(lb.urls)
 }
