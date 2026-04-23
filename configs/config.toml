@@ -30,3 +30,8 @@ timeout_seconds = 2
 # 代理转发配置
 [proxy]
 timeout_seconds = 30   # 转发后端请求的超时时间
+
+# TLS 配置
+[tls]
+cert_file = "cert.pem"
+key_file = "key.pem"

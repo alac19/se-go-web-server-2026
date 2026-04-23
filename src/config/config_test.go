@@ -209,3 +209,74 @@ forward_port = 9091
 		t.Errorf("缺少 proxy 段时 TimeoutSeconds 应为 0，得到 %d", cfg.Proxy.TimeoutSeconds)
 	}
 }
+
+// 测试包含 TLS 证书配置的完整配置
+func TestLoadConfigWithTLS(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[heartbeat]
+enabled = true
+path = "/heartbeat"
+interval_seconds = 30
+timeout_seconds = 2
+
+[proxy]
+timeout_seconds = 45
+
+[tls]
+cert_file = "mycert.pem"
+key_file = "mykey.pem"
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig 返回错误: %v", err)
+	}
+	if cfg.TLS.CertFile != "mycert.pem" {
+		t.Errorf("TLS.CertFile 期望 mycert.pem，得到 %s", cfg.TLS.CertFile)
+	}
+	if cfg.TLS.KeyFile != "mykey.pem" {
+		t.Errorf("TLS.KeyFile 期望 mykey.pem，得到 %s", cfg.TLS.KeyFile)
+	}
+}
+
+// 测试缺少 TLS 配置时，CertFile 和 KeyFile 应为空字符串
+func TestLoadConfigMissingTLS(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+
+	cfg, err := LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadConfig 返回错误: %v", err)
+	}
+	if cfg.TLS.CertFile != "" {
+		t.Errorf("缺少 TLS 段时 CertFile 应为空，得到 %s", cfg.TLS.CertFile)
+	}
+	if cfg.TLS.KeyFile != "" {
+		t.Errorf("缺少 TLS 段时 KeyFile 应为空，得到 %s", cfg.TLS.KeyFile)
+	}
+}
