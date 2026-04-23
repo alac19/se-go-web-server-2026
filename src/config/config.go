@@ -4,7 +4,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/BurntSushi/toml"
+	"github.com/BurntSushi/toml" // 用于解析 TOML 配置文件
 )
 
 // Config 总配置
@@ -13,6 +13,7 @@ type Config struct {
 	Forward   []Forward `toml:"forward"`
 	Heartbeat Heartbeat `toml:"heartbeat"`
 	Proxy     Proxy     `toml:"proxy"`
+	TLS       TLSConfig `toml:"tls"`
 }
 
 // Listen 监听配置
@@ -38,6 +39,11 @@ type Heartbeat struct {
 // Proxy 代理转发配置
 type Proxy struct {
 	TimeoutSeconds int `toml:"timeout_seconds"` // 转发请求超时（秒）
+}
+
+type TLSConfig struct {
+	CertFile string `toml:"cert_file"`
+	KeyFile  string `toml:"key_file"`
 }
 
 // / 从指定路径加载 TOML 配置文件
