@@ -355,3 +355,96 @@ forward_port = 9091
 		t.Errorf("缺少 log 段时 FilePath 应为空，得到 %s", cfg.Log.FilePath)
 	}
 }
+
+// 测试心跳配置校验：间隔为0
+func TestLoadConfigHeartbeatZeroInterval(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[heartbeat]
+enabled = true
+path = "/heartbeat"
+interval_seconds = 0
+timeout_seconds = 2
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+	_, err := LoadConfig(configPath)
+	if err == nil {
+		t.Fatal("期望心跳间隔为0时返回错误，但没有错误")
+	}
+	if err.Error() != "心跳间隔 interval_seconds 必须为正数" {
+		t.Errorf("期望错误信息 '心跳间隔 interval_seconds 必须为正数'，得到 %v", err)
+	}
+}
+
+// 测试心跳配置校验：超时为0
+func TestLoadConfigHeartbeatZeroTimeout(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[heartbeat]
+enabled = true
+path = "/heartbeat"
+interval_seconds = 30
+timeout_seconds = 0
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+	_, err := LoadConfig(configPath)
+	if err == nil {
+		t.Fatal("期望心跳超时为0时返回错误，但没有错误")
+	}
+	if err.Error() != "心跳超时 timeout_seconds 必须为正数" {
+		t.Errorf("期望错误信息 '心跳超时 timeout_seconds 必须为正数'，得到 %v", err)
+	}
+}
+
+// 测试心跳配置校验：路径为空
+func TestLoadConfigHeartbeatEmptyPath(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.toml")
+	content := `
+[[listen]]
+listen_addr = "127.0.0.1"
+listen_port = 8080
+
+[[forward]]
+forward_addr = "127.0.0.1"
+forward_port = 9091
+
+[heartbeat]
+enabled = true
+path = ""
+interval_seconds = 30
+timeout_seconds = 2
+`
+	if err := os.WriteFile(configPath, []byte(content), 0644); err != nil {
+		t.Fatalf("写入临时文件失败: %v", err)
+	}
+	_, err := LoadConfig(configPath)
+	if err == nil {
+		t.Fatal("期望心跳路径为空时返回错误，但没有错误")
+	}
+	if err.Error() != "心跳路径 path 不能为空" {
+		t.Errorf("期望错误信息 '心跳路径 path 不能为空'，得到 %v", err)
+	}
+}

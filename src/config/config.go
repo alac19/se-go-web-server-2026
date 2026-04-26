@@ -85,6 +85,17 @@ func LoadConfig(path string) (*Config, error) {
 			return nil, fmt.Errorf("转发端口不能为 0")
 		}
 	}
+	if config.Heartbeat.Enabled {
+		if config.Heartbeat.IntervalSeconds <= 0 {
+			return nil, fmt.Errorf("心跳间隔 interval_seconds 必须为正数")
+		}
+		if config.Heartbeat.TimeoutSeconds <= 0 {
+			return nil, fmt.Errorf("心跳超时 timeout_seconds 必须为正数")
+		}
+		if config.Heartbeat.Path == "" {
+			return nil, fmt.Errorf("心跳路径 path 不能为空")
+		}
+	}
 
 	return &config, nil
 }
