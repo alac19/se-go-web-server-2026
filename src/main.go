@@ -20,8 +20,6 @@ import (
 
 // 程序入口，负责加载配置、初始化组件（负载均衡器、健康检查器、反向代理）并启动 HTTP/HTTPS 服务器
 func main() {
-	fmt.Println("Hello, Cloud Native! 项目进入代码编写阶段！")
-
 	// 加载配置
 	cfg, err := config.LoadConfig("configs/config.toml")
 
@@ -71,8 +69,8 @@ func main() {
 			cfg.Heartbeat.TimeoutSeconds,
 			onHealthy,
 		)
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
+		ctx, cancel := context.WithCancel(context.Background()) // 创建可取消的上下文，用于控制健康检查协程的生命周期
+		defer cancel()                                          // 确保主程序退出时取消健康检查协程，ctx.Done() 通道会被关闭，所有监听 ctx.Done() 的代码都会收到信号
 		checker.Start(ctx)
 		slog.Info("健康检查已启动", "interval", cfg.Heartbeat.IntervalSeconds, "path", cfg.Heartbeat.Path)
 	} else {
@@ -104,7 +102,7 @@ func main() {
 	select {}
 }
 
-// 启动 HTTP 服务器（非 TLS）
+// / 启动 HTTP 服务器（非 TLS）
 // / # 参数
 // / - addr: 监听地址（IP:端口）
 // / - handler: HTTP 处理器（反向代理）
@@ -119,7 +117,7 @@ func startHTTPServer(addr string, handler http.Handler) {
 	}()
 }
 
-// 启动 HTTPS 服务器（TLS）
+// / 启动 HTTPS 服务器（TLS）
 // / # 参数
 // / - addr: 监听地址（IP:端口）
 // / - handler: HTTP 处理器（反向代理）

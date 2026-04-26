@@ -60,7 +60,7 @@ func NewChecker(
 	}
 }
 
-// 启动后台健康检查循环，结构体方法
+// / 启动后台健康检查循环，结构体方法
 // / # 参数
 // / - ctx: 上下文，用于控制协程生命周期（取消时停止检查）
 func (c *Checker) Start(ctx context.Context) {
@@ -83,7 +83,7 @@ func (c *Checker) Start(ctx context.Context) {
 	}()
 }
 
-// checkAndUpdate 执行一次所有后端的健康检测，并调用回调更新健康列表
+// / checkAndUpdate 执行一次所有后端的健康检测，并调用回调更新健康列表
 func (c *Checker) checkAndUpdate() {
 	var healthyURLs []*url.URL
 

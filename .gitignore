@@ -34,6 +34,9 @@ key.pem
 # Log files
 log.txt
 
+# Test results output
+test_results/
+
 # Editor/IDE
 # .idea/
 # .vscode/

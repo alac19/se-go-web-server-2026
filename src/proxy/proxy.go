@@ -18,11 +18,13 @@ import (
 func NewReverseProxy(lb *lb.LoadBalancer, timeoutSec int) http.Handler {
 	// 配置 HTTP 传输层（连接池、超时等）
 	transport := &http.Transport{
-		MaxIdleConns:          100,                                     // 全局最大空闲连接数
-		MaxIdleConnsPerHost:   20,                                      // 每个后端的最大空闲连接数
+		MaxIdleConns:          300,                                     // 全局最大空闲连接数
+		MaxIdleConnsPerHost:   100,                                     // 每个后端的最大空闲连接数
 		IdleConnTimeout:       90 * time.Second,                        // 空闲连接超时
 		TLSHandshakeTimeout:   10 * time.Second,                        // TLS 握手超时
 		ResponseHeaderTimeout: time.Duration(timeoutSec) * time.Second, // 整体超时
+		// 显式启用 Keep-Alive（默认就是true，但确保）
+		DisableKeepAlives: false,
 	}
 	// 定义反向代理的请求转发器（Director）
 	// 当有健康后端时，这个 director 会被调用，修改请求的 URL 为目标后端
