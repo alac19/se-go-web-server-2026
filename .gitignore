@@ -36,6 +36,7 @@ log.txt
 
 # Test results output
 test_results/
+test_results_2/
 
 # Editor/IDE
 # .idea/
