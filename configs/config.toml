@@ -1,28 +1,28 @@
 # 监听端口列表
 [[listen]]
-listen_addr = "127.0.0.1"
+listen_addr = "0.0.0.0" # 便于本地运行和容器内运行
 listen_port = 8080   # HTTP 端口
 
 [[listen]]
-listen_addr = "127.0.0.1"
+listen_addr = "0.0.0.0"
 listen_port = 8443   # HTTPS 端口
 
 # 后端服务器列表
 [[forward]]
-forward_addr = "127.0.0.1"
+forward_addr = "backend1"
 forward_port = 9091
 
 [[forward]]
-forward_addr = "127.0.0.1"
+forward_addr = "backend2"
 forward_port = 9092
 
 [[forward]]
-forward_addr = "127.0.0.1"
+forward_addr = "backend3"
 forward_port = 9093
 
 # 心跳检测配置
 [heartbeat]
-enabled = true
+enabled = true 
 path = "/heartbeat"
 interval_seconds = 30
 timeout_seconds = 2
