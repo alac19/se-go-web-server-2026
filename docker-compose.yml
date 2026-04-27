@@ -1,0 +1,34 @@
+services:
+  proxy:
+    build: .
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./configs/config.toml:/root/configs/config.toml
+      - ./cert.pem:/root/cert.pem
+      - ./key.pem:/root/key.pem
+    networks:
+      - proxy-net
+
+  backend1:
+    image: hashicorp/http-echo
+    command: [ "-text", "Hello from backend 9091", "-listen", ":9091" ]
+    networks:
+      - proxy-net
+
+  backend2:
+    image: hashicorp/http-echo
+    command: [ "-text", "Hello from backend 9092", "-listen", ":9092" ]
+    networks:
+      - proxy-net
+
+  backend3:
+    image: hashicorp/http-echo
+    command: [ "-text", "Hello from backend 9093", "-listen", ":9093" ]
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    driver: bridge
